@@ -3,21 +3,15 @@ var PATH_VALIDATION_REGEX = /^((\.[_a-zA-Z$][_a-zA-Z0-9$]*)|(\[(('[^'\\]*(?:\\.[
 /**
  * Storage for a validated path
  * @param {String} path - Full validated path
- * @param {String|Null} firstPathPart - "Converted" first path if necessary (see helpers::convertFirstPathPart)
- * @param {String|Null} pathRemainder - "Converted" remainder of the path if necessary (see helpers::convertFirstPathPart)
+ * @param {String|Null} firstPathPart - "Converted" first path if necessary (see convertFirstPathPart)
+ * @param {String|Null} pathRemainder - "Converted" remainder of the path if necessary (see convertFirstPathPart)
  * @constructor
  */
-function ValidatedPath(path, firstPathPart, pathRemainder) {
+export function ValidatedPath(path, firstPathPart, pathRemainder) {
     this.path = path;
     this.firstPathPart = firstPathPart;
     this.pathRemainder = pathRemainder;
 }
-
-/**
- * helpers for jsocrud
- * @constructor
- */
-function helpers() {}
 
 /**
  * Look backwards from a position in a string to discern whether or not the character
@@ -28,7 +22,7 @@ function helpers() {}
  * @param {String} inputString Entire string to check
  * @returns {Boolean} True if the character is escaped else False
  */
-helpers.isEscaped = function(characterIndex, inputString) {
+export function isEscaped(characterIndex, inputString) {
     var escapeCharactersEncountered = 0;
     while (characterIndex) {
         characterIndex -= 1;
@@ -39,7 +33,7 @@ helpers.isEscaped = function(characterIndex, inputString) {
         }
     }
     return Boolean(escapeCharactersEncountered % 2);
-};
+}
 
 /**
  * Format a pathPart, returning it in bracket notation with previously unescaped
@@ -47,20 +41,21 @@ helpers.isEscaped = function(characterIndex, inputString) {
  * @param {String} pathPart Component of a jsocrud path to format in bracket notation
  * @returns {String} Formatted first path part (in bracket notation)
  */
-helpers.formatFirstPathPart = function(pathPart) {
+export function formatFirstPathPart(pathPart) {
     var quoteRegex = /\"/g;
     if (pathPart.search(/^\d+$/) !== -1) {
         return '[' + pathPart + ']';
     }
+    var match;
     while (match = quoteRegex.exec(pathPart)) {
-        if (!this.isEscaped(quoteRegex.lastIndex-1, pathPart)) {
-            pathPart = pathPart.substring(0, quoteRegex.lastIndex-1) + '\\' +
-                pathPart.substring(quoteRegex.lastIndex-1, pathPart.length);
+        if (!isEscaped(quoteRegex.lastIndex - 1, pathPart)) {
+            pathPart = pathPart.substring(0, quoteRegex.lastIndex - 1) + '\\' +
+                pathPart.substring(quoteRegex.lastIndex - 1, pathPart.length);
             quoteRegex.lastIndex += 1;
         }
     }
     return '["' + pathPart + '"]';
-};
+}
 
 /**
  * Convert the first path 'part' of a path into bracket notation
@@ -68,25 +63,26 @@ helpers.formatFirstPathPart = function(pathPart) {
  * @returns {ValidatedPath} ValidatedPath containing the correct path, firstPathPart
  * and pathRemainder
  */
-helpers.convertFirstPathPart = function(path) {
+export function convertFirstPathPart(path) {
     var pathPartRegex = /([^.[]*)(?:\.|\[)?/g;
     var pathPart = '';
     var firstPathPart, formattedPathPart;
     var previousIndex = -1;
     var pathRemainder = '';
+    var match;
 
     while (match = pathPartRegex.exec(path)) {
         var fullMatch = match[0];
-        var delimiterIndex =  match[0].length - 1;
+        var delimiterIndex = match[0].length - 1;
         var delimiter = match[0][delimiterIndex];
 
         pathPart += match[1]; // Add the entire non-delimited section to the pathPart
 
         if (delimiter && delimiter == '.' || delimiter == '[') {
 
-            if (!this.isEscaped(pathPartRegex.lastIndex-1, path)) {
+            if (!isEscaped(pathPartRegex.lastIndex - 1, path)) {
                 firstPathPart = pathPart;
-                formattedPathPart = this.formatFirstPathPart(pathPart);
+                formattedPathPart = formatFirstPathPart(pathPart);
                 pathRemainder += delimiter;
                 break;  // Break out of the loop when we find an unescaped delimiter
             }
@@ -106,20 +102,20 @@ helpers.convertFirstPathPart = function(path) {
     // to be the full path in bracket notation
     if (!formattedPathPart) {
         firstPathPart = path;
-        formattedPathPart = this.formatFirstPathPart(path);
+        formattedPathPart = formatFirstPathPart(path);
         pathPartRegex.lastIndex = path.length + 1;
     }
 
     pathRemainder = pathRemainder + path.substr(pathPartRegex.lastIndex, path.length);
     return new ValidatedPath(formattedPathPart + pathRemainder, firstPathPart, pathRemainder)
-};
+}
 
 /**
  * Validates the given path and converts the first path part to bracket notation if necessary
  * @param {String} path Path in an object (e.g. ["foo"][2].bar)
  * @returns {ValidatedPath} Validated path data
  */
-helpers.validatePath = function(path) {
+export function validatePath(path) {
     if (typeof path !== 'string' || !path) {
         throw new Error('Argument "path" must be a non-empty string.')
     }
@@ -128,7 +124,7 @@ helpers.validatePath = function(path) {
         var firstCharacter = path[0];
         var validatedPath;
         if (firstCharacter !== '[' && firstCharacter !== '.') {
-            validatedPath = this.convertFirstPathPart(path);
+            validatedPath = convertFirstPathPart(path);
             path = validatedPath.path;
         }
         if (!PATH_VALIDATION_REGEX.test(path)) {
@@ -141,14 +137,14 @@ helpers.validatePath = function(path) {
     } catch (e) {
         throw new Error('The given path is not valid');
     }
-};
+}
 
 /**
  * Parse a validated path into components
  * @param {ValidatedPath} validatedPath Validated path data
  * @returns {Array} Path components
  */
-helpers.parsePath = function(validatedPath) {
+export function parsePath(validatedPath) {
     var pathSplitRegex = /(\.[[_a-zA-Z$][_a-zA-Z0-9$]+)|(\[(('[^'\\]*(?:\\.[^'\\]*)*')|("[^"\\]*(?:\\.[^"\\]*)*")|(\d+))\])/g;
     var parsedPath = [];
     var match;
@@ -176,14 +172,4 @@ helpers.parsePath = function(validatedPath) {
         parsedPath.push(match);
     }
     return parsedPath;
-};
-
-// Exports ---------------------------------------------------------------------
-module.exports = {
-    ValidatedPath: ValidatedPath,
-    isEscaped: helpers.isEscaped,
-    formatFirstPathPart: helpers.formatFirstPathPart,
-    convertFirstPathPart: helpers.convertFirstPathPart,
-    validatePath: helpers.validatePath,
-    parsePath: helpers.parsePath,
-};
+}

@@ -24,7 +24,7 @@ Examples of acceptable paths and their resulting locations in an object:
 --------------
 Here are some code examples of how you would use this package interact with JavaScript objects:
 ```js
-> var jsocrud = require('jsocrud');  // Require the package to start
+import jsocrud from 'jsocrud'
 
 // - Insert (Create) -
 > var object = {};

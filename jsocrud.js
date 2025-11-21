@@ -1,10 +1,9 @@
-var helpers = require('./helpers');
+import * as helpers from './helpers.js';
 
 /**
  * jsocrud module
- * @constructor
  */
-function jsocrud() {}
+const jsocrud = {};
 
 /**
  * Attempts to insert the given value into the given object at the given path.
@@ -14,7 +13,7 @@ function jsocrud() {}
  * @param {Object|Array|String|Boolean|Number} value Value to insert into the object
  * @returns {Object} Object after insertion
  */
-jsocrud.insert = function(object, path, value) {
+jsocrud.insert = function (object, path, value) {
     try {
         var exists = (typeof this.get(object, path) !== 'undefined');
     }
@@ -36,12 +35,12 @@ jsocrud.insert = function(object, path, value) {
  * this function will act as if no default return value was set.
  * @returns {Object|Array|String|Boolean|Number} Value in the object at the specified path
  */
-jsocrud.get = function(object, path, defaultReturnValue) {
+jsocrud.get = function (object, path, defaultReturnValue) {
     var parsedPath = helpers.parsePath(helpers.validatePath(path));
     try {
         var i;
         var currentObject = object;
-        for (i=0; i < parsedPath.length; ++i) {
+        for (i = 0; i < parsedPath.length; ++i) {
             currentObject = currentObject[parsedPath[i]];
         }
         if (typeof currentObject === 'undefined') {
@@ -64,12 +63,12 @@ jsocrud.get = function(object, path, defaultReturnValue) {
  * @param {Object|Array|String|Boolean|Number} value Value to set in the object
  * @returns {Object} Object after setting value
  */
-jsocrud.set = function(object, path, value) {
+jsocrud.set = function (object, path, value) {
     var parsedPath = helpers.parsePath(helpers.validatePath(path));
     try {
         var i;
         var currentObject = object;
-        for (i=0; i < parsedPath.length-1; ++i) {
+        for (i = 0; i < parsedPath.length - 1; ++i) {
             currentObject = currentObject[parsedPath[i]];
         }
         currentObject[parsedPath[i]] = value;
@@ -86,12 +85,12 @@ jsocrud.set = function(object, path, value) {
  * @param {String} path Path in the object to delete (e.g. ["foo"][2].bar)
  * @returns {Object} Object after removal
  */
-jsocrud.remove = function(object, path) {
+jsocrud.remove = function (object, path) {
     var parsedPath = helpers.parsePath(helpers.validatePath(path));
     try {
         var i;
         var currentObject = object;
-        for (i=0; i < parsedPath.length-1; ++i) {
+        for (i = 0; i < parsedPath.length - 1; ++i) {
             currentObject = currentObject[parsedPath[i]];
         }
         delete currentObject[parsedPath[i]];
@@ -103,7 +102,7 @@ jsocrud.remove = function(object, path) {
 };
 
 // Exports ---------------------------------------------------------------------
-module.exports = {
+export default {
     insert: jsocrud.insert,
     get: jsocrud.get,
     set: jsocrud.set,
